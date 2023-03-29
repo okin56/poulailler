@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	 <meta charset="utf-8">
+  <title>Le jeu du poulallier</title>
+<style>
+.buttonType0 {
+color : green;
+width:758px;
+}
+.buttonType1 {
+color : pink;
+background-color : grey;
+width:758px;
+}
+.buttonType2 {
+color : blue;
+background-color : white;
+width:758px;
+}
+
+.icone li,div{
+	width : 58px;
+	height : 54px;
+	display : inline-block;
+	background-image:url("des.jpg");
+	background-repeat:no-repeat;
+}
+
+.icone article{
+	width : 750px;
+	height : 100px;
+	display : inline-block;
+}
+
+.div1{background-position:0 top;}
+.div2{background-position:-107px top;}
+.div3{background-position:0 -55px;}
+.div4{background-position:-107px -55px;}
+.div5{background-position:0 -110px;}
+.div6{background-position:-107px -110px;}
+</style>
+<script language="javascript">
+var j1;
+var j2;
+var index;
+var tab_xy;
+var canvas;
+var context;
+var sources;
+
+function init_game(){
+	j1 = new Joueur("Renard");
+	j2 = new Joueur("Poules");
+	index = 0;
+	
+	tab_xy = new Array(70);
+	
+	init_tab_xy();
+	
+	var x=document.getElementById("informations")
+	x.innerHTML=j1.nom + ' peut commencer le jeu en cliquant sur le dé.';
+	
+	init_canvas();  
+}
+	
+function init_canvas(){
+	  canvas = document.getElementById('plateau');
+      context = canvas.getContext('2d');
+
+      sources = {
+        plateau: 'poulallier.png',
+        masculin: 'renard.png',
+        feminin: 'poule1.png'
+      };
+
+      loadImages(sources, function(images) {
+        context.drawImage(images.plateau, 5, 5, 755, 505);
+        context.drawImage(images.masculin, 570, 90, 96, 64);
+        context.drawImage(images.feminin, 100, 480, 96, 64);
+      });
+}
+
+function loadImages(sources, callback) {
+        var images = {};
+        var loadedImages = 0;
+        var numImages = 0;
+        // get num of sources
+        for(var src in sources) {
+          numImages++;
+        }
+        for(var src in sources) {
+          images[src] = new Image();
+          images[src].onload = function() {
+            if(++loadedImages >= numImages) {
+              callback(images);
+            }
+          };
+          images[src].src = sources[src];
+        }
+      }
+	
+
+	function init_tab_xy()
+{
+	tab_xy[0] = "10,480";
+	
+	tab_xy[1] = "10,480";
+	tab_xy[2] = "10,420";
+	tab_xy[3] = "10,350";
+	tab_xy[4] = "10,290";
+	tab_xy[5] = "10,230";
+	
+	tab_xy[6] = "10,160";
+	tab_xy[7] = "10,120";
+	tab_xy[8] = "10,60";
+	tab_xy[9] = "80,60";
+	tab_xy[10] = "150,60";
+	
+	tab_xy[11] = "220,60";
+	tab_xy[12] = "290,60";
+	tab_xy[13] = "360,60";
+	tab_xy[14] = "430,60";
+	tab_xy[15] = "500,60";
+	
+	tab_xy[16] = "570,60";
+	tab_xy[17] = "640,60";
+	tab_xy[18] = "710,60";
+	tab_xy[19] = "710,120";
+	tab_xy[20] = "710,160";
+	
+	tab_xy[21] = "710,230";
+	tab_xy[22] = "710,290";
+	tab_xy[23] = "710,350";
+	tab_xy[24] = "710,410";
+	tab_xy[25] = "710,480";
+	
+	tab_xy[26] = "640,480";
+	tab_xy[27] = "590,480";
+	tab_xy[28] = "540,480";
+	tab_xy[29] = "490,480";
+	tab_xy[30] = "440,480";
+	
+	tab_xy[31] = "390,480";
+	tab_xy[32] = "340,480";
+	tab_xy[33] = "290,480";
+	tab_xy[34] = "240,480";
+	tab_xy[35] = "200,480";
+	
+	tab_xy[36] = "140,480";
+	tab_xy[37] = "140,410";
+	tab_xy[38] = "140,350";
+	tab_xy[39] = "140,290";
+	tab_xy[40] = "140,235";
+	
+	tab_xy[41] = "140,190";
+	tab_xy[42] = "140,150";
+	tab_xy[43] = "200,150";
+	tab_xy[44] = "240,150";
+	tab_xy[45] = "280,150";
+	
+	tab_xy[46] = "315,150";
+	tab_xy[47] = "355,150";
+	tab_xy[48] = "395,150";
+	tab_xy[49] = "425,150";
+	tab_xy[50] = "465,150";
+	
+	tab_xy[51] = "515,150";
+	tab_xy[52] = "555,150";
+	tab_xy[53] = "555,190";
+	tab_xy[54] = "555,235";
+	tab_xy[55] = "555,290";
+	
+	tab_xy[56] = "555,360";
+	tab_xy[57] = "505,360";
+	tab_xy[58] = "465,360";
+	tab_xy[59] = "420,360";
+	tab_xy[60] = "380,360";
+	
+	tab_xy[61] = "335,360";
+	tab_xy[62] = "290,360";
+	tab_xy[63] = "240,360";
+	tab_xy[64] = "240,290";
+	tab_xy[65] = "240,220";
+	
+	tab_xy[66] = "300,220";
+	tab_xy[67] = "350,220";
+	tab_xy[68] = "410,220";
+	tab_xy[69] = "470,220";
+	
+	}
+	
+function nextRound(nb_dice){
+	if(index % 2 === 0)
+	{
+		j1.rollTheDice(nb_dice);
+		j1.showValues();
+		if(j1.replay === 1)
+		{
+			index++;
+			j1.replay = 0;
+		}else
+		{
+			if(j2.skip === 1)
+			{
+				index++;
+				j2.skip = 0;
+			}
+		}
+	}else{
+		j2.rollTheDice(nb_dice);
+		j2.showValues();
+		if(j2.replay === 1)
+		{
+			index++;
+			j2.replay = 0;
+		}else
+		{
+			if(j1.skip === 1)
+			{
+				index++;
+				j1.skip = 0;
+			}
+		}
+	}
+	index++;	
+	loadImages(sources, function(images) {
+        context.drawImage(images.plateau, 5, 5, 755, 505);
+        context.drawImage(images.masculin, j2.x, j2.y, 32, 32);
+        context.drawImage(images.feminin, j1.x, j1.y, 32, 32);
+      });
+}	
+
+function rollOneDice1() {
+	var de_value = rand();
+		
+	var myDiv = document.getElementById("divDice1");
+	myDiv.className= "div" + de_value;
+	
+	return de_value;
+}
+
+function rollOneDice2() {
+	var de_value = rand();
+			
+	var myDiv = document.getElementById("divDice2");
+	myDiv.className= "div" + de_value;
+	
+	return de_value;
+}
+
+function rand(){
+	return(Math.floor(Math.random() * 100 % 6) + 1);
+	
+	}
+	
+function Joueur(myName)
+ {
+  var nom;
+  var score;
+  var de_value;
+  var icone;
+  var skip;
+  var replay;
+  var x;
+  var y;
+       
+  this.rollTheDice = function(nb_dice)
+  {
+    this.de_value = rollOneDice1();
+    this.score += this.de_value;
+    
+    if(nb_dice > 1)
+    {
+		var myDice = rollOneDice2();
+		this.score += myDice;
+		this.de_value += myDice;
+    }
+    
+    if(this.score > 69){
+		this.score = 69;
+	}
+	
+	this.deplaceJoueur();
+   }
+   
+   this.deplaceJoueur = function () 
+   {
+    var xy = tab_xy[this.score];
+    var n = xy.split(",");
+    this.x = n[0];
+    this.y = n[1];
+    
+    // traitement spécial pour passer un tour
+    if(this.score === 12 || this.score === 15 || this.score === 25 || this.score === 27 || this.score === 43 || this.score === 68)
+    {
+		this.skip = 1;
+	}
+	
+  }
+  
+  this.validation = function()
+	{
+	
+	var r=confirm("Cliquez sur Ok si le gage a été réussi, sinon cliquez sur Annuler");
+	if (r==true)
+	  {
+	    this.replay = 1;
+	    this.skip = 0;
+	  }
+	else
+	  {
+	    this.replay = 0;
+	    this.skip = 1;
+	  }
+	
+	}
+  
+  this.getValues = function()
+  {
+	  return 'Joueur : ' + this.nom + '<br/> Dé : ' + this.de_value + ' Case : ' + this.score + '<br/> Gages : ' + tab_gages[this.score];
+  }
+  
+  this.showValues = function()
+  {
+	  var x=document.getElementById("informations")
+	  x.innerHTML=this.getValues();
+	  if(this.nom === 'coco'){
+		  x.className='buttonType2';
+	  }else{
+		  x.className='buttonType1';
+	  }	 
+	  
+	if(this.score === 29)
+	{
+		alert(tab_gages[this.score]);
+		// retour à la case 22
+		this.score = 22;
+		this.deplaceJoueur();
+	}
+	
+	if(this.score === 33)
+	{
+		// aller à la case 36
+		alert(tab_gages[this.score]);
+		this.score = 36;
+		this.deplaceJoueur();
+	} 	  		 
+  }
+ /* initialisation de l'attribut à la fin
+  * (Constructeur)
+  */
+	this.nom = myName;
+	this.score = 0;
+	this.de_value = 0;
+	this.icone = "";
+	this.skip = 0;
+	this.replay = 0;
+		
+ }
+
+</script>
+</head>
+<body>
+<form>
+<input type="button" value="new game" class="buttonType0" onclick="init_game()" id="btnDice">
+<br/>
+
+<canvas id="plateau" width="800" height="600">Votre navigateur ne supporte pas les canvas. Veuiller le mettre à jour</canvas>
+</form>
+<div id="divDice1" width="58" height="54" border="2" class="div1" onclick="nextRound(1)"></div>
+<div id="divDice2" width="58" height="54" border="2" class="div1" onclick="nextRound(2)"></div>
+<article class="buttonType0" width="400" height="200" id="informations">Cliquer sur New Game</article>
+</body>
+</html> 
