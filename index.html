@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>POULAILLER</title>
+	<style type="text/css">body { background: black; } canvas { background: white; }
+	</style>
+</head>
+<body>
+<form><input onclick="init();" type="button" value="New Game" /> <input onclick="test();" type="button" value="Instructions" />&nbsp;</form>
+
+<p><canvas height="700" id="canvas" style="backgroung-color: #EEE;" width="600"></canvas></p>
+<div style="display:none;">
+	<img alt="" height="700" id="fond" src="https://i.ibb.co/yWrZVQy/fond.png" width="1100" /> 
+	<img alt="" height="270" id="pions" src="https://i.ibb.co/gd8J2X5/pions.png" width="260" /> 
+	<img alt="" height="270" id="victoire" src="https://i.ibb.co/SyhMmsk/victoire.png" width="260" />
+	</div>
+<script>
+      
+	window.onload = function() {
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+		var elemLeft = canvas.offsetLeft;
+		var elemTop = canvas.offsetTop;		
+		var souris = {x:0, y:0};
+		var currentElement = {x:0,y:0,w:0,h:0,dx:0,dy:0,dw:0,dh:0, name:"aucun", pions:false, visible:false, index:0};		
+		var elements = [];		
+		var scorePoule = 0;
+		var scoreRenard = 0;
+		var cptTour = 0;
+		
+		var fond_png = document.getElementById("fond");
+		var pions_png = document.getElementById("pions");	
+		var victoire_png = document.getElementById("victoire");
+		
+		var poule1 = {x:0,y:70,w:80,h:58,dx:90,dy:348,dw:80,dh:58, name:"poule1", pions:true, visible:true, index:0};
+		var poule2 = {x:90,y:70,w:80,h:58,dx:90,dy:410,dw:80,dh:58, name:"poule2", pions:true, visible:true, index:0};
+		var poule3 = {x:180,y:70,w:80,h:58,dx:90,dy:470,dw:80,dh:58, name:"poule3", pions:true, visible:true, index:0};
+		var poule4 = {x:0,y:70,w:80,h:58,dx:90,dy:530,dw:80,dh:58, name:"poule4", pions:true, visible:true, index:0};
+		var poule5 = {x:90,y:70,w:80,h:58,dx:170,dy:530,dw:80,dh:58, name:"poule5", pions:true, visible:true, index:0};
+		var poule6 = {x:180,y:70,w:80,h:58,dx:250,dy:530,dw:80,dh:58, name:"poule6", pions:true, visible:true, index:0};
+		var poule7 = {x:0,y:70,w:80,h:58,dx:330,dy:530,dw:80,dh:58, name:"poule7", pions:true, visible:true, index:0};
+		
+		var renard = {x:0,y:0,w:80,h:58,dx:410,dy:290,dw:80,dh:58, name:"renard", pions:true, visible:true, index:0};
+
+		elements.push(poule1);
+		elements.push(poule2);	
+		elements.push(poule3);	
+		elements.push(poule4);	
+		elements.push(poule5);	
+		elements.push(poule6);	
+		elements.push(poule7);	
+		elements.push(renard);	
+
+		elements.forEach(function(element) {
+			initDeplacementAutorise(element);		
+		});
+		
+		canvas.addEventListener('click', function(event) {
+	     souris.x = event.pageX - elemLeft,
+         souris.y = event.pageY - elemTop;
+		 
+		 setTimeout(boucle, 1000/60);		
+		}, false);
+				
+		function boucle(){
+		  ctx.clearRect(0,0, 600,700);
+		  // plateau
+		 ctx.drawImage(fond_png,0,0,560,700,0,0,560,700);
+		  
+		  currentElement = getCurrentElement();
+		  
+		   
+		showOffDeplacement();
+						
+		if(currentElement.pions)
+		{
+			if((cptTour%2 == 0 && currentElement.name.startsWith("poule")) || (cptTour%2 > 0 && currentElement.name.startsWith("renard")))
+				showOnDeplacement(currentElement);
+		}
+		else
+		{			
+			moveElement(currentElement);
+			if(!currentElement.name.startsWith("aucun"))
+				cptTour = cptTour + 1;
+		}
+		  		  
+		  elements.forEach(function(element) {
+				if(element.pions)
+				{						
+					ctx.drawImage(pions_png,element.x, element.y, element.w, element.h,element.dx, element.dy, element.dw, element.dh);
+				}
+				else
+					if(element.visible)
+					{
+						ctx.globalAlpha = 0.5;
+						if(cptTour%2 == 0)
+							ctx.fillStyle = '#FF44CC';
+						else
+							ctx.fillStyle = '#44FFCC';
+						//ctx.fillRect(element.dx + 10, element.dy + 10, element.dw - 20, element.dh - 20); // dessine le cube à sa position					
+						var cercle = new Path2D();
+						cercle.moveTo(element.dx + (element.dw/2), element.dy + (element.dh/2));
+						cercle.arc(element.dx + (element.dw/2), element.dy + (element.dh/2), (element.dw - 30)/2, 0, 2 * Math.PI);
+						ctx.fill(cercle);
+						
+						ctx.globalAlpha = 1;
+						
+						ctx.fillStyle = "black";
+					}
+				
+			});
+			
+		  ctx.fillText("SCORE", 15, 10);
+		  ctx.fillText("POULE  : " + scorePoule, 20, 25);
+		  ctx.fillText("RENARD : " + scoreRenard, 20, 40);
+		  
+		  if(cptTour%2 == 0)
+		  {			
+			ctx.fillRect(10,20,5,5);
+		  }
+		  else
+		  {
+			ctx.fillRect(10,35,5,5);
+		  }
+		  
+		  //ctx.fillText(souris.x + ' . ' + souris.y, 10, 60);	
+
+		  if(scorePoule >= 4)
+		  {
+			ctx.clearRect(0,0, 600,700);
+			//ctx.fillText("VICTOIRE DES POULES !!!", 100, 60);	
+			ctx.drawImage(victoire_png,0,70,260,58,100,100,260,58);
+		  }		  
+		  
+		  if(scoreRenard >= 4)
+		  {
+			ctx.clearRect(0,0, 600,700);
+			//ctx.fillText("VICTOIRE DU RENARD !!!", 100, 60);	
+			ctx.drawImage(victoire_png,0,0,260,58,100,100,260,58);
+		  }		  
+			
+		}
+
+		boucle();
+		
+		function getCurrentElement()
+		{
+			var myElement = {x:0, y:0, w:0, h:0, dx:0, dy:0, dw:0, dh:0, name:"aucun", pions:false, visible:false, index:0};
+			
+			elements.forEach(function(element) {
+				if(detection(element))
+				{
+					myElement = element;					
+				}
+			});
+			
+			return myElement;
+		}
+		
+		function detection(item)
+		{
+			var bln = false;
+			// on cherche à déterminer si la souris est sur un item lors du click
+			if(item.visible)
+			{
+				if(souris.x >= item.dx && souris.x <= item.dx + item.dw)
+				{
+					if(souris.y >= item.dy && souris.y <= item.dy + item.dh)
+					{
+						bln = true;
+					}
+				}
+			}			
+			return bln;
+		};
+		
+		function initDeplacementAutorise(item)
+		{
+			// cas des poules
+			if(item.name.startsWith("poule"))
+			{
+				var left = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx - item.dw, dy:item.dy, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:1};
+				var top = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx, dy:item.dy - item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:2};
+				var bottom = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx + item.dw, dy:item.dy , dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:3};
+				var right = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx, dy:item.dy + item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:4};
+				
+				elements.push(left);
+				elements.push(top);
+				elements.push(bottom);
+				elements.push(right);
+			}
+			else
+			{ // renard
+				var left = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx - 2*item.dw, dy:item.dy - item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:1};
+				var top = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx - item.dw, dy:item.dy - 2*item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:2};
+				var right = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx + 2*item.dw, dy:item.dy - item.dh , dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:3};
+				var bottom = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx - item.dw, dy:item.dy + 2*item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:4};
+				
+				var left2 = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx - 2*item.dw, dy:item.dy + item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:5};
+				var top2 = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx + item.dw, dy:item.dy - 2*item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:6};
+				var right2 = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx + 2*item.dw, dy:item.dy + item.dh , dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:7};
+				var bottom2 = {x:item.x, y:item.y, w:item.w, h:item.h, dx:item.dx + item.dw, dy:item.dy + 2*item.dh, dw:item.dw, dh:item.dh, name:item.name, pions:false, visible:false, index:8};
+				
+				elements.push(left);
+				elements.push(top);
+				elements.push(bottom);
+				elements.push(right);
+				elements.push(left2);
+				elements.push(top2);
+				elements.push(bottom2);
+				elements.push(right2);
+			}	
+
+													
+		};
+		
+		function updateDeplacementAutorise(elem)
+		{
+			var item = {x:elem.x , y:elem.y, w:elem.w, h:elem.h, dx:elem.dx , dy:elem.dy, dw:elem.dw, dh:elem.dh, name:elem.name, pions:elem.pions, visible:elem.visible, index:elem.index};
+			elements.forEach(function(element) {
+				if(element.name == item.name)
+				{
+					if(element.name.startsWith("poule"))
+					{
+						if(!element.pions)
+						{
+							if(element.index == 1)
+							{
+								element.dx = item.dx - item.dw;
+								element.dy = item.dy;
+							}
+							if(element.index == 2)
+							{
+								element.dx = item.dx;
+								element.dy = item.dy - item.dh;
+							}
+							if(element.index == 3)
+							{
+								element.dx = item.dx + item.dw;
+								element.dy = item.dy;
+							}
+							if(element.index == 4)
+							{
+								element.dx = item.dx;
+								element.dy = item.dy + item.dh;
+							}
+						}
+					}	
+					else
+					{ // renard
+						if(!element.pions)
+						{
+							if(element.index == 1)
+							{
+								element.dx = item.dx - 2*item.dw;
+								element.dy = item.dy - item.dh;
+							}
+							if(element.index == 2)
+							{
+								element.dx = item.dx - item.dw;
+								element.dy = item.dy - 2*item.dh;
+							}
+							if(element.index == 3)
+							{
+								element.dx = item.dx + 2*item.dw;
+								element.dy = item.dy - item.dh;
+							}
+							if(element.index == 4)
+							{
+								element.dx = item.dx - item.dw;
+								element.dy = item.dy + 2*item.dh;
+							}
+							if(element.index == 5)
+							{
+								element.dx = item.dx - 2*item.dw;
+								element.dy = item.dy + item.dh;
+							}
+							if(element.index == 6)
+							{
+								element.dx = item.dx + item.dw;
+								element.dy = item.dy - 2*item.dh;
+							}
+							if(element.index == 7)
+							{
+								element.dx = item.dx + 2*item.dw;
+								element.dy = item.dy + item.dh;
+							}
+							if(element.index == 8)
+							{
+								element.dx = item.dx + item.dw;
+								element.dy = item.dy + 2*item.dh;
+							}
+						}
+					}					
+				}				
+			});		
+											
+		};
+				
+		function moveElement(item)
+		{
+			elements.forEach(function(element) {
+				if(element.name == item.name)
+				{
+					if(element.pions)
+					{								
+						if(item.name.startsWith("poule"))
+						{
+							element.dx = item.dx;
+							element.dy = item.dy;
+							
+							if(detectionSortiePoule(item))
+							{
+								element.dx = 5 + element.dw * scorePoule;
+								element.dy = 610;
+								
+								scorePoule	= scorePoule + 1;
+							}
+					
+							if(detectionBonusPoule(item))
+							{							
+								showOnDeplacement(element);
+								cptTour = cptTour + 1;
+								setTimeout(boucle, 1000/60);
+							}
+						}
+						else
+						{ // renard
+							detectionMangerPoule(item);
+							
+							element.dx = item.dx;
+							element.dy = item.dy;
+						}
+					}
+				}				
+			});
+
+			showOffDeplacement(item);
+			updateDeplacementAutorise(item);			
+		}
+		
+		function detectionMangerPoule(item)
+		{		
+			elements.forEach(function(element) {
+				if(element.pions && (element.dx > item.dx - 10 && element.dx < item.dx+10) && (element.dy > item.dy - 10 && element.dy < item.dy+10))
+				{
+					element.dx = 480;
+					element.dy = 10 + element.dh * scoreRenard;
+					
+					scoreRenard = scoreRenard + 1;
+				}	
+			});
+		}
+		
+		function detectionBonusPoule(item)
+		{
+			var bln = false;
+			
+			if(item.dx < 190 && item.dx > 150 && item.dy > 335 && item.dy < 365)
+			{
+				bln = true;
+			}
+			
+			if(item.dx < 190 && item.dx > 150 && item.dy > 455 && item.dy < 475)
+			{
+				bln = true;
+			}
+			
+			if(item.dx < 345 && item.dx > 315 && item.dy > 335 && item.dy < 365)
+			{
+				bln = true;
+			}
+			
+			if(item.dx < 345 && item.dx > 315 && item.dy > 455 && item.dy < 475)
+			{
+				bln = true;
+			}
+			
+			return bln;
+		};
+		
+		function detectionSortiePoule(item)
+		{
+			var bln = false;
+			
+			if(item.dx < 420 && item.dx > 380 && item.dy > 270 && item.dy < 300)
+			{
+				bln = true;
+			}
+			
+			return bln;
+		};
+				
+		function showOnDeplacement(item)
+		{					
+			elements.forEach(function(element) {
+				if(element.name == item.name)
+				{
+					if(!element.pions)
+					{
+						// ici vérifier si le déplacement est autorisé : case libre ou occupée / bord du plateau
+						if(!detectionBordPlateau(element))
+						{
+							if(!detectionCollision(element))
+								element.visible = true;
+						}
+						
+					}						
+				}				
+			});
+			
+		};
+		
+		function detectionCollision(item)
+		{
+			var bln = false;
+			elements.forEach(function(element) {				
+				if(element.pions)
+				{	if(item.name.startsWith("poule"))
+					{
+						if((element.dx > item.dx - 10 && element.dx < item.dx+10) && (element.dy > item.dy - 10 && element.dy < item.dy+10))
+						{
+							bln = true;
+						}					
+					}									
+				}														
+			});
+			
+			return bln;
+		};
+		
+		function detectionBordPlateau(item)
+		{
+			var bln = false;
+			
+			if(item.dx < 90 || item.dx > 410)
+			{
+				bln = true;
+			}
+			
+			if(item.dy < 280 || item.dy > 540)
+			{
+				bln = true;
+			}			
+			
+			return bln
+		};
+		
+		function showOffDeplacement()
+		{					
+			elements.forEach(function(element) {
+				if(!element.pions)
+				{
+					element.visible = false;
+				}				
+			});
+			
+		};
+		
+      };
+	  function init()
+		{
+			document.location.reload(true);
+		};
+	  
+	  function test()
+		{
+			var canvas = document.getElementById('canvas');
+			var ctx = canvas.getContext('2d');
+			var fond_png = document.getElementById("fond");
+				// instructions
+			ctx.drawImage(fond_png,565,0,535,700,0,0,535,700);
+		};
+	  
+
+    </script></body>
+</html>
